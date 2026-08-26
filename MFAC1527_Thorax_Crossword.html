@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MFAC1527 Thorax Musculoskeletal Anatomy Crossword</title>
+<style>
+:root{
+ --yellow:#ffd500;--navy:#17324a;--bg:#f3f6f8;--card:#fff;
+ --ink:#1d2832;--muted:#6c7883;--line:#dbe3e9;
+ --green:#4f9460;--greenbg:#dff1e3;--red:#c94d4d;--redbg:#f7c8c8;
+ --shadow:0 12px 34px rgba(22,50,74,.11)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Avenir,Inter,"Segoe UI",Arial,sans-serif}
+header{background:var(--navy);color:#fff;border-bottom:7px solid var(--yellow)}
+.head{max-width:1080px;margin:auto;padding:22px 18px 19px;display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.kicker{color:var(--yellow);font-size:12px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
+h1{margin:3px 0 0;font-size:clamp(36px,6vw,61px);line-height:.92;letter-spacing:-.05em}
+.tagline{margin:8px 0 0;color:#d7e3ec;font-size:14px}
+.brand{text-align:right;color:#d7e3ec;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+main{max-width:1080px;margin:auto;padding:20px 14px 42px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.topbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f8fafb;border-bottom:1px solid var(--line);padding:12px 14px}
+.stat{text-align:center}
+.stat small{display:block;color:#83909b;text-transform:uppercase;font-size:9px;letter-spacing:.09em;font-weight:900}
+.stat strong{display:block;color:var(--navy);font-size:18px;margin-top:2px}
+.body{display:flex;flex-direction:column;gap:18px;padding:18px}
+.crossword-shell{background:#111820;padding:5px;border-radius:12px;width:100%;display:flex;justify-content:center;overflow:visible}
+.grid{--cell-size:min(29px,calc((100vw - 58px)/26));display:grid;gap:1px;background:#111820;width:max-content;margin:auto}
+.cell,.block{width:var(--cell-size);height:var(--cell-size)}
+.block{background:#111820}
+.cell{position:relative;background:#fff}
+.cell.word{background:#e9f3fa}
+.cell.selected{background:#ffe96c}
+.cell.bad{background:var(--redbg)}
+.cell.good{background:var(--greenbg)}
+.number{position:absolute;top:1px;left:2px;font-size:clamp(5px,calc(var(--cell-size)*.23),6.5px);line-height:1;font-weight:900;color:#425261;z-index:2}
+.cell input{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;text-align:center;text-transform:uppercase;font-family:Arial,sans-serif;font-weight:900;font-size:clamp(7px,calc(var(--cell-size)*.5),14px);line-height:1;padding:calc(var(--cell-size)*.18) 0 0;color:#172736;caret-color:transparent}
+.cell input:focus{outline:none}
+.clue-area{min-width:0;width:100%}
+.clue-area h2{margin:0;color:var(--navy);font-size:25px}
+.intro{margin:4px 0 12px;color:var(--muted);font-size:12px;line-height:1.45}
+.active-clue{background:#fff8d5;border-left:5px solid var(--yellow);border-radius:10px;padding:10px 11px;min-height:63px;margin-bottom:11px}
+.active-clue small{display:block;color:#78660e;text-transform:uppercase;font-size:9px;letter-spacing:.09em;font-weight:900}
+.active-clue strong{display:block;color:var(--navy);font-size:14px;line-height:1.35;margin-top:4px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+button{font:inherit}
+.primary,.secondary,.danger{border:0;border-radius:9px;min-height:40px;padding:8px 11px;font-size:12px;font-weight:900;cursor:pointer}
+.primary{background:var(--navy);color:white}
+.secondary{background:#edf2f5;color:#2b4051}
+.danger{background:#fff0f0;color:#972f2f}
+button:focus-visible{outline:3px solid #79afd9;outline-offset:2px}
+.clue-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.clue-group h3{margin:0 0 7px;color:var(--navy);font-size:16px}
+.clues{display:grid;gap:5px}
+.clue{border:0;background:#f5f7f9;border-radius:8px;padding:7px 8px;text-align:left;cursor:pointer;font:inherit;color:#40505e;font-size:11px;line-height:1.32}
+.clue:hover{background:#edf3f7}
+.clue.active{background:#fff4ae;color:#493f0a}
+.clue.solved{background:#e6f3e9;color:#367240}
+.clue b{color:var(--navy);margin-right:3px}
+.feedback{min-height:28px;margin-top:10px;border-radius:9px;font-size:12px;font-weight:850}
+.feedback.good,.feedback.bad,.feedback.info{padding:8px 10px}
+.feedback.good{background:#e5f4e9;color:#337341}
+.feedback.bad{background:#fae6e6;color:#923434}
+.feedback.info{background:#edf4f8;color:#3d5b72}
+.modal{position:fixed;inset:0;background:rgba(10,24,36,.62);display:grid;place-items:center;padding:18px;z-index:30}
+.modal.hidden{display:none}
+.modal-card{width:min(440px,100%);background:white;border-radius:17px;padding:23px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-card h2{margin:0;color:var(--navy);font-size:29px}
+.modal-card p{color:var(--muted);line-height:1.45}
+.footer{text-align:center;color:#84909a;font-size:11px;margin-top:16px}
+@media(max-width:650px){
+ .topbar{grid-template-columns:repeat(3,1fr)}
+ .clue-cols{grid-template-columns:1fr}
+ .brand{text-align:left}
+ .body{padding:12px}
+ .crossword-shell{padding:3px}
+ .grid{--cell-size:min(29px,calc((100vw - 40px)/24))}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="head">
+ <div>
+  <div class="kicker">MFAC1527: Society and Health</div>
+  <h1>Thorax<br>Crossword</h1>
+  <div class="tagline">Thorax Musculoskeletal Anatomy</div>
+ </div>
+ <div class="brand">Bones • muscles • diaphragm<br>neurovasculature • lymphatics</div>
+</div>
+</header>
+
+<main>
+<section class="panel">
+ <div class="topbar">
+  <div class="stat"><small>Solved</small><strong id="solved">0 / 28</strong></div>
+  <div class="stat"><small>Progress</small><strong id="filled">0%</strong></div>
+  <div class="stat"><small>Time</small><strong id="timer">00:00</strong></div>
+ </div>
+
+ <div class="body">
+  <div class="crossword-shell"><div class="grid" id="grid"></div></div>
+
+  <section class="clue-area">
+   <h2>Clues</h2>
+   <div class="intro">Click a clue or a square to select an answer. At an intersection, click the square again or press Space to switch between Across and Down.</div>
+
+   <div class="active-clue">
+    <small id="activeLabel">Select a clue</small>
+    <strong id="activeText">Choose any Across or Down clue to begin.</strong>
+   </div>
+
+   <div class="actions">
+    <button class="primary" id="checkBtn" type="button">Check</button>
+    <button class="secondary" id="hintBtn" type="button">Hint letter</button>
+    <button class="secondary" id="revealBtn" type="button">Reveal word</button>
+    <button class="danger" id="resetBtn" type="button">Reset</button>
+   </div>
+
+   <div class="clue-cols">
+    <div class="clue-group"><h3>Across</h3><div class="clues" id="across"></div></div>
+    <div class="clue-group"><h3>Down</h3><div class="clues" id="down"></div></div>
+   </div>
+
+   <div class="feedback" id="feedback"></div>
+  </section>
+ </div>
+</section>
+<div class="footer">MFAC1527: Society and Health • Thorax Musculoskeletal Anatomy</div>
+</main>
+
+<div class="modal hidden" id="modal">
+ <div class="modal-card">
+  <h2>Crossword complete 🧠</h2>
+  <p id="completeText"></p>
+  <button class="primary" id="closeModal" type="button">Back to crossword</button>
+ </div>
+</div>
+
+<script>
+(() => {
+const ENTRIES=[{"answer": "BUCKETHANDLE", "clue": "Rib movement at ribs 7–10 that increases the transverse dimension of the thorax.", "row": 0, "col": 3, "dir": "down", "number": 1}, {"answer": "XIPHOIDPROCESS", "clue": "Inferior part of the sternum; also provides an anterior attachment for the diaphragm.", "row": 0, "col": 7, "dir": "across", "number": 2}, {"answer": "INNERMOSTINTERCOSTALS", "clue": "Deepest intercostal muscle layer; assists forced expiration.", "row": 0, "col": 12, "dir": "down", "number": 3}, {"answer": "SUBCOSTALNERVE", "clue": "Ventral ramus of T12, travelling below the 12th rib rather than in an intercostal space.", "row": 1, "col": 25, "dir": "down", "number": 4}, {"answer": "VENACAVALHIATUS", "clue": "T8 opening through the central tendon for the inferior vena cava.", "row": 2, "col": 1, "dir": "down", "number": 5}, {"answer": "DIAPHRAGM", "clue": "Broad, dome-shaped primary muscle of inspiration separating thoracic and abdominal cavities.", "row": 2, "col": 6, "dir": "down", "number": 6}, {"answer": "MANUBRIUM", "clue": "Superior part of the sternum; articulates with the clavicles and the 1st and 2nd rib cartilages.", "row": 2, "col": 10, "dir": "across", "number": 7}, {"answer": "INTERNALINTERCOSTALS", "clue": "Middle intercostal muscle layer with interosseous and interchondral parts.", "row": 4, "col": 0, "dir": "across", "number": 8}, {"answer": "VAN", "clue": "Superior-to-inferior arrangement of the main intercostal bundle: vein, artery, nerve.", "row": 8, "col": 1, "dir": "across", "number": 9}, {"answer": "ENDOTHORACICFASCIA", "clue": "Layer deep to the innermost intercostal muscle and superficial to parietal pleura.", "row": 8, "col": 8, "dir": "across", "number": 10}, {"answer": "OESOPHAGEALHIATUS", "clue": "T10 opening formed by fibres of the right crus.", "row": 11, "col": 5, "dir": "down", "number": 11}, {"answer": "COSTOTRANSVERSE", "clue": "Synovial joint between a rib tubercle and the transverse process of the adjacent vertebra.", "row": 11, "col": 9, "dir": "across", "number": 12}, {"answer": "CENTRALTENDON", "clue": "Structure into which diaphragm muscle fibres insert.", "row": 13, "col": 8, "dir": "across", "number": 13}, {"answer": "NAV", "clue": "Superior-to-inferior arrangement of the collateral intercostal bundle: nerve, artery, vein.", "row": 13, "col": 20, "dir": "down", "number": 14}, {"answer": "PHRENICNERVE", "clue": "Nerve arising from C3–C5 that provides motor supply to the diaphragm.", "row": 15, "col": 14, "dir": "down", "number": 15}, {"answer": "STERNALANGLE", "clue": "Clinical landmark formed by the manubriosternal joint.", "row": 17, "col": 11, "dir": "across", "number": 16}, {"answer": "COSTALGROOVE", "clue": "Shallow groove on the inner lower border of a rib that carries the main intercostal neurovascular bundle.", "row": 18, "col": 1, "dir": "down", "number": 17}, {"answer": "PUMPHANDLE", "clue": "Rib movement at ribs 2–6 that increases the anterior-posterior dimension of the thorax.", "row": 18, "col": 3, "dir": "down", "number": 18}, {"answer": "EXTERNALINTERCOSTALS", "clue": "Outermost intercostal muscle layer; a primary muscle of inspiration.", "row": 19, "col": 5, "dir": "across", "number": 19}, {"answer": "AORTICHIATUS", "clue": "T12 opening between the crura for the abdominal aorta.", "row": 19, "col": 22, "dir": "down", "number": 20}, {"answer": "RIGHTCRUS", "clue": "Posterior diaphragmatic structure arising from L1–L3 and forming the oesophageal hiatus.", "row": 21, "col": 7, "dir": "down", "number": 21}, {"answer": "FLOATINGRIBS", "clue": "Ribs 11 and 12, which do not articulate with the sternum.", "row": 23, "col": 0, "dir": "across", "number": 22}, {"answer": "DEMIFACET", "clue": "Articular surface on a typical thoracic vertebral body for the head of a rib.", "row": 23, "col": 20, "dir": "down", "number": 23}, {"answer": "THORACICDUCT", "clue": "Major lymphatic channel receiving lower intercostal-node drainage and emptying at the left venous angle.", "row": 29, "col": 13, "dir": "across", "number": 24}];
+const ROWS=32, COLS=26;
+
+const gridEl=document.getElementById('grid');
+const cellMap=new Map();
+const owners=new Map();
+let active=null;
+let activePos=0;
+let started=Date.now();
+let completed=false;
+
+function K(r,c){return r+','+c}
+
+ENTRIES.forEach((e,ei)=>{
+ const dr=e.dir==='across'?0:1, dc=e.dir==='across'?1:0;
+ e.cells=[];
+ for(let i=0;i<e.answer.length;i++){
+  const k=K(e.row+dr*i,e.col+dc*i);
+  e.cells.push(k);
+  if(!owners.has(k))owners.set(k,[]);
+  owners.get(k).push(ei);
+ }
+});
+
+const startNums=new Map();
+ENTRIES.forEach(e=>startNums.set(K(e.row,e.col),e.number));
+
+gridEl.style.gridTemplateColumns=`repeat(${COLS},var(--cell-size))`;
+
+for(let r=0;r<ROWS;r++){
+ for(let c=0;c<COLS;c++){
+  const k=K(r,c);
+  if(!owners.has(k)){
+   const b=document.createElement('div');
+   b.className='block';
+   gridEl.appendChild(b);
+   continue;
+  }
+
+  const cell=document.createElement('div');
+  cell.className='cell';
+  if(startNums.has(k)){
+   const n=document.createElement('span');
+   n.className='number';
+   n.textContent=startNums.get(k);
+   cell.appendChild(n);
+  }
+
+  const input=document.createElement('input');
+  input.maxLength=1;
+  input.autocomplete='off';
+  input.spellcheck=false;
+  input.setAttribute('aria-label',`Crossword row ${r+1}, column ${c+1}`);
+  cell.appendChild(input);
+  gridEl.appendChild(cell);
+  cellMap.set(k,{cell,input,r,c});
+
+  input.addEventListener('focus',()=>chooseFromCell(k,false));
+  cell.addEventListener('mousedown',e=>{
+   if(document.activeElement===input){
+    e.preventDefault();
+    chooseFromCell(k,true);
+   }
+  });
+  input.addEventListener('input',e=>typeLetter(k,e));
+  input.addEventListener('keydown',e=>keyDown(k,e));
+ }
+}
+
+function makeClues(dir,id){
+ const holder=document.getElementById(id);
+ ENTRIES.map((e,i)=>({e,i}))
+  .filter(x=>x.e.dir===dir)
+  .sort((a,b)=>a.e.number-b.e.number)
+  .forEach(({e,i})=>{
+   const b=document.createElement('button');
+   b.type='button';
+   b.className='clue';
+   b.dataset.i=i;
+   b.innerHTML=`<b>${e.number}.</b> ${e.clue}`;
+   b.addEventListener('click',()=>selectEntry(i,0,true));
+   holder.appendChild(b);
+  });
+}
+makeClues('across','across');
+makeClues('down','down');
+
+function chooseFromCell(k,toggle){
+ const list=owners.get(k)||[];
+ if(!list.length)return;
+
+ let chosen=list[0];
+ if(active!==null && list.includes(active)){
+  chosen=active;
+  if(toggle && list.length===2)chosen=list.find(x=>x!==active);
+ }else if(active!==null){
+  const same=list.find(x=>ENTRIES[x].dir===ENTRIES[active].dir);
+  if(same!==undefined)chosen=same;
+ }
+
+ const pos=ENTRIES[chosen].cells.indexOf(k);
+ selectEntry(chosen,pos,false);
+ cellMap.get(k).input.focus();
+}
+
+function selectEntry(i,pos=0,focus=true){
+ active=i;
+ activePos=Math.max(0,pos);
+
+ document.querySelectorAll('.cell').forEach(x=>x.classList.remove('word','selected'));
+ ENTRIES[i].cells.forEach(k=>cellMap.get(k).cell.classList.add('word'));
+
+ const k=ENTRIES[i].cells[activePos];
+ cellMap.get(k).cell.classList.add('selected');
+
+ document.querySelectorAll('.clue').forEach(x=>x.classList.toggle('active',Number(x.dataset.i)===i));
+
+ const e=ENTRIES[i];
+ document.getElementById('activeLabel').textContent=`${e.number} ${e.dir.toUpperCase()} • ${e.answer.length} letters`;
+ document.getElementById('activeText').textContent=e.clue;
+
+ if(focus)cellMap.get(k).input.focus();
+}
+
+function typeLetter(k,e){
+ let v=e.target.value.toUpperCase().replace(/[^A-Z]/g,'');
+ e.target.value=v.slice(-1);
+ cellMap.get(k).cell.classList.remove('bad','good');
+
+ if(!e.target.value || active===null){
+  update();
+  return;
+ }
+
+ const word=ENTRIES[active];
+ const here=word.cells.indexOf(k);
+
+ if(here>=0){
+  for(let j=here+1;j<word.cells.length;j++){
+   const inp=cellMap.get(word.cells[j]).input;
+   if(!inp.value){
+    selectEntry(active,j,true);
+    break;
+   }
+  }
+ }
+
+ update();
+ checkFinished();
+}
+
+function keyDown(k,e){
+ if(active===null)return;
+ const word=ENTRIES[active];
+ const here=word.cells.indexOf(k);
+
+ if(e.key==='Backspace' && !e.target.value && here>0){
+  e.preventDefault();
+  const prev=word.cells[here-1];
+  cellMap.get(prev).input.value='';
+  cellMap.get(prev).cell.classList.remove('bad','good');
+  selectEntry(active,here-1,true);
+  update();
+  return;
+ }
+
+ if(e.key===' '){
+  e.preventDefault();
+  chooseFromCell(k,true);
+  return;
+ }
+
+ const moves={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowDown:[1,0],ArrowUp:[-1,0]};
+ if(moves[e.key]){
+  e.preventDefault();
+  const [dr,dc]=moves[e.key];
+  const cur=cellMap.get(k);
+  const nk=K(cur.r+dr,cur.c+dc);
+  if(cellMap.has(nk)){
+   chooseFromCell(nk,false);
+   cellMap.get(nk).input.focus();
+  }
+ }
+}
+
+function solved(e){
+ return e.cells.every((k,i)=>cellMap.get(k).input.value.toUpperCase()===e.answer[i]);
+}
+
+function expectedAt(k){
+ const ei=owners.get(k)[0];
+ const e=ENTRIES[ei];
+ return e.answer[e.cells.indexOf(k)];
+}
+
+function update(){
+ const solvedCount=ENTRIES.filter(solved).length;
+ let filled=0;
+ cellMap.forEach(x=>{if(x.input.value)filled++});
+
+ document.getElementById('solved').textContent=`${solvedCount} / ${ENTRIES.length}`;
+ document.getElementById('filled').textContent=`${Math.round(filled/cellMap.size*100)}%`;
+
+ document.querySelectorAll('.clue').forEach(x=>{
+  x.classList.toggle('solved',solved(ENTRIES[Number(x.dataset.i)]));
+ });
+}
+
+function checkPuzzle(){
+ let wrong=0,filled=0;
+
+ cellMap.forEach(({cell,input},k)=>{
+  cell.classList.remove('bad','good');
+  if(!input.value)return;
+  filled++;
+  if(input.value.toUpperCase()===expectedAt(k))cell.classList.add('good');
+  else{
+   cell.classList.add('bad');
+   wrong++;
+  }
+ });
+
+ if(!filled)setFeedback('Fill in some letters first.','info');
+ else if(wrong)setFeedback(`${wrong} filled square${wrong===1?' is':'s are'} incorrect.`,'bad');
+ else setFeedback('Everything filled so far is correct.','good');
+
+ update();
+ checkFinished();
+}
+
+function hint(){
+ if(active===null){
+  setFeedback('Select a clue first.','info');
+  return;
+ }
+
+ const e=ENTRIES[active];
+ const candidates=e.cells.map((k,i)=>({k,i})).filter(x=>!cellMap.get(x.k).input.value);
+
+ if(!candidates.length){
+  setFeedback('That answer is already filled.','info');
+  return;
+ }
+
+ const pick=candidates[Math.floor(Math.random()*candidates.length)];
+ cellMap.get(pick.k).input.value=e.answer[pick.i];
+ cellMap.get(pick.k).cell.classList.remove('bad','good');
+ selectEntry(active,pick.i,true);
+ setFeedback('One letter revealed.','info');
+ update();
+ checkFinished();
+}
+
+function reveal(){
+ if(active===null){
+  setFeedback('Select a clue first.','info');
+  return;
+ }
+
+ const e=ENTRIES[active];
+ e.cells.forEach((k,i)=>{
+  cellMap.get(k).input.value=e.answer[i];
+  cellMap.get(k).cell.classList.remove('bad','good');
+ });
+
+ setFeedback(`${e.number} ${e.dir} revealed.`,'info');
+ update();
+ checkFinished();
+}
+
+function reset(){
+ if(!window.confirm('Reset the whole crossword?'))return;
+
+ cellMap.forEach(({cell,input})=>{
+  input.value='';
+  cell.classList.remove('bad','good','word','selected');
+ });
+
+ active=null;
+ completed=false;
+ started=Date.now();
+
+ document.querySelectorAll('.clue').forEach(x=>x.classList.remove('active','solved'));
+ document.getElementById('activeLabel').textContent='Select a clue';
+ document.getElementById('activeText').textContent='Choose any Across or Down clue to begin.';
+ setFeedback('Crossword reset.','info');
+ update();
+}
+
+function checkFinished(){
+ if(completed)return;
+
+ if(ENTRIES.every(solved)){
+  completed=true;
+  const sec=Math.floor((Date.now()-started)/1000);
+  document.getElementById('completeText').textContent=
+   `You solved all ${ENTRIES.length} answers in ${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}.`;
+  document.getElementById('modal').classList.remove('hidden');
+ }
+}
+
+function setFeedback(text,type){
+ const f=document.getElementById('feedback');
+ f.textContent=text;
+ f.className=`feedback ${type||''}`;
+}
+
+setInterval(()=>{
+ const sec=Math.floor((Date.now()-started)/1000);
+ document.getElementById('timer').textContent=
+  `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+},1000);
+
+document.getElementById('checkBtn').addEventListener('click',checkPuzzle);
+document.getElementById('hintBtn').addEventListener('click',hint);
+document.getElementById('revealBtn').addEventListener('click',reveal);
+document.getElementById('resetBtn').addEventListener('click',reset);
+document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('modal').classList.add('hidden'));
+
+update();
+})();
+</script>
+</body>
+</html>
